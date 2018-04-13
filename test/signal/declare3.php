@@ -13,5 +13,5 @@ pcntl_signal(SIGINT,function(){
 echo "Ctl + c or run cmd : kill -SIGINT " . posix_getpid(). "\n" ;
 
 while(1){
-    $num = 1;
+    usleep(100);
 }
