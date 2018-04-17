@@ -459,8 +459,9 @@ class Worker
         static::checkSapiEnv();
         //初始化设置
         static::init();
-        //解析命令 传参  start | stop 等
+        //解析命令 传参  start | stop | restart 等等
         static::parseCommand();
+        //
         static::daemonize();
         static::initWorkers();
         static::installSignal();
