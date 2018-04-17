@@ -455,8 +455,11 @@ class Worker
      */
     public static function runAll()
     {
+        //判断是否cli模式， 系统
         static::checkSapiEnv();
+        //初始化设置
         static::init();
+        //
         static::parseCommand();
         static::daemonize();
         static::initWorkers();
@@ -498,16 +501,17 @@ class Worker
 
         $unique_prefix = str_replace('/', '_', static::$_startFile);
 
-        // Pid file.
+        // Pid file. 设置pid文件
         if (empty(static::$pidFile)) {
             static::$pidFile = __DIR__ . "/../$unique_prefix.pid";
         }
 
-        // Log file.
+        // Log file. 设置log文件
         if (empty(static::$logFile)) {
             static::$logFile = __DIR__ . '/../workerman.log';
         }
         $log_file = (string)static::$logFile;
+        //创建日志文件
         if (!is_file($log_file)) {
             touch($log_file);
             chmod($log_file, 0622);
@@ -518,9 +522,10 @@ class Worker
 
         // For statistics.
         static::$_globalStatistics['start_timestamp'] = time();
+        //sys_get_temp_dir(); 返回用于临时文件的目录 /tmp
         static::$_statisticsFile                      = sys_get_temp_dir() . "/$unique_prefix.status";
 
-        // Process title.
+        // Process title. 设置当前进程名(master)
         static::setProcessTitle('WorkerMan: master process  start_file=' . static::$_startFile);
 
         // Init data for worker id.
@@ -1923,12 +1928,14 @@ class Worker
     public function __construct($socket_name = '', $context_option = array())
     {
         // Save all worker instances.
+        //给this对象设置hash值
         $this->workerId                  = spl_object_hash($this);
         static::$_workers[$this->workerId] = $this;
         static::$_pidMap[$this->workerId]  = array();
 
         // Get autoload root path.
         $backtrace                = debug_backtrace();
+        //入口文件的绝对路径
         $this->_autoloadRootPath = dirname($backtrace[0]['file']);
 
         // Context for socket.

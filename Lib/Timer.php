@@ -55,6 +55,7 @@ class Timer
             self::$_event = $event;
         } else {
             if (function_exists('pcntl_signal')) {
+                //安装信号处理器, SIGALRM信号
                 pcntl_signal(SIGALRM, array('\Workerman\Lib\Timer', 'signalHandle'), false);
             }
         }
