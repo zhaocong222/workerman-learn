@@ -461,8 +461,9 @@ class Worker
         static::init();
         //解析命令 传参  start | stop | restart 等等
         static::parseCommand();
-        //
+        //把当前进程设置为守护进程
         static::daemonize();
+        //初始化worker进程
         static::initWorkers();
         static::installSignal();
         static::saveMasterPid();
@@ -546,6 +547,7 @@ class Worker
         if (static::$_OS !== 'linux') {
             return;
         }
+
         foreach (static::$_workers as $worker) {
             // Worker name.
             if (empty($worker->name)) {
@@ -554,6 +556,7 @@ class Worker
 
             // Get maximum length of worker name.
             $worker_name_length = strlen($worker->name);
+
             if (static::$_maxWorkerNameLength < $worker_name_length) {
                 static::$_maxWorkerNameLength = $worker_name_length;
             }
@@ -566,6 +569,7 @@ class Worker
 
             // Get unix user of the worker process.
             if (empty($worker->user)) {
+                //获取linux系统当前进程 的用户
                 $worker->user = static::getCurrentUser();
             } else {
                 if (posix_getuid() !== 0 && $worker->user != static::getCurrentUser()) {
@@ -1973,11 +1977,14 @@ class Worker
 
         if (!$this->_mainSocket) {
             // Get the application layer communication protocol and listening address.
+            //$this->_socketName -> 实例化Work第一个参数 如http://0.0.0.0:2345
+            //$scheme 协议 $address地址
             list($scheme, $address) = explode(':', $this->_socketName, 2);
-            // Check application layer protocol class.
+            // Check application layer protocol class. 自定义协议
             if (!isset(static::$_builtinTransports[$scheme])) {
                 $scheme         = ucfirst($scheme);
                 $this->protocol = substr($scheme,0,1)==='\\' ? $scheme : '\\Protocols\\' . $scheme;
+
                 if (!class_exists($this->protocol)) {
                     $this->protocol = "\\Workerman\\Protocols\\$scheme";
                     if (!class_exists($this->protocol)) {
@@ -1991,19 +1998,20 @@ class Worker
             } else {
                 $this->transport = $scheme;
             }
-
+            //socket 地址
             $local_socket = static::$_builtinTransports[$this->transport] . ":" . $address;
 
             // Flag.
             $flags = $this->transport === 'udp' ? STREAM_SERVER_BIND : STREAM_SERVER_BIND | STREAM_SERVER_LISTEN;
             $errno = 0;
             $errmsg = '';
-            // SO_REUSEPORT.
+            // SO_REUSEPORT. 默认false，http://doc.workerman.net/315142 ，避免惊群效应
             if ($this->reusePort) {
                 stream_context_set_option($this->_context, 'socket', 'so_reuseport', 1);
             }
 
             // Create an Internet or Unix domain server socket.
+            //创建socket连接
             $this->_mainSocket = stream_socket_server($local_socket, $errno, $errmsg, $flags, $this->_context);
             if (!$this->_mainSocket) {
                 throw new Exception($errmsg);
@@ -2023,12 +2031,15 @@ class Worker
 
             // Try to open keepalive for tcp and disable Nagle algorithm.
             if (function_exists('socket_import_stream') && static::$_builtinTransports[$this->transport] === 'tcp') {
+                //导入socket流
                 $socket = socket_import_stream($this->_mainSocket);
+                //开启keepalive机制
                 @socket_set_option($socket, SOL_SOCKET, SO_KEEPALIVE, 1);
+                //禁止Nagle算法
                 @socket_set_option($socket, SOL_TCP, TCP_NODELAY, 1);
             }
 
-            // Non blocking.
+            // Non blocking. 非阻塞
             stream_set_blocking($this->_mainSocket, 0);
         }
 
@@ -2069,7 +2080,9 @@ class Worker
     public function resumeAccept()
     {
         // Register a listener to be notified when server socket is ready to read.
+        //当socket服务准备开始读取 注册一个监听者去通知
         if (static::$globalEvent && true === $this->_pauseAccept && $this->_mainSocket) {
+            //$this->_mainSocket -> socket连接
             if ($this->transport !== 'udp') {
                 static::$globalEvent->add($this->_mainSocket, EventInterface::EV_READ, array($this, 'acceptConnection'));
             } else {
