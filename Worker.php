@@ -465,6 +465,7 @@ class Worker
         static::daemonize();
         //初始化worker进程
         static::initWorkers();
+        //安装信号
         static::installSignal();
         static::saveMasterPid();
         static::displayUI();
@@ -2042,8 +2043,9 @@ class Worker
             // Non blocking. 非阻塞
             stream_set_blocking($this->_mainSocket, 0);
         }
-
+        
         $this->resumeAccept();
+
     }
 
     /**
@@ -2082,6 +2084,7 @@ class Worker
         // Register a listener to be notified when server socket is ready to read.
         //当socket服务准备开始读取 注册一个监听者去通知
         if (static::$globalEvent && true === $this->_pauseAccept && $this->_mainSocket) {
+
             //$this->_mainSocket -> socket连接
             if ($this->transport !== 'udp') {
                 static::$globalEvent->add($this->_mainSocket, EventInterface::EV_READ, array($this, 'acceptConnection'));
