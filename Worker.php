@@ -467,6 +467,7 @@ class Worker
         static::initWorkers();
         //安装信号
         static::installSignal();
+        //通过posix_getpid获取当前进程id，然后写入到 pid文件
         static::saveMasterPid();
         static::displayUI();
         static::forkWorkers();
@@ -921,19 +922,19 @@ class Worker
         if (static::$_OS !== 'linux') {
             return;
         }
-        // stop
+        // stop SIGINT 程序终止(interrupt)信号, 在用户键入INTR字符(通常是Ctrl-C)时发出，用于通知前台进程组终止进程。
         pcntl_signal(SIGINT, array('\Workerman\Worker', 'signalHandler'), false);
-        // graceful stop
+        // graceful stop 程序结束(terminate)信号 通常用来要求程序自己正常退出
         pcntl_signal(SIGTERM, array('\Workerman\Worker', 'signalHandler'), false);
-        // reload
+        // reload   用户定义信号1
         pcntl_signal(SIGUSR1, array('\Workerman\Worker', 'signalHandler'), false);
-        // graceful reload
+        // graceful reload  SIGQUIT 和SIGINT类似, 但由QUIT字符(通常是Ctrl-)来控制
         pcntl_signal(SIGQUIT, array('\Workerman\Worker', 'signalHandler'), false);
-        // status
+        // status   用户定义信号2
         pcntl_signal(SIGUSR2, array('\Workerman\Worker', 'signalHandler'), false);
-        // connection status
+        // connection status 文件描述符准备就绪, 可以开始进行输入/输出操作
         pcntl_signal(SIGIO, array('\Workerman\Worker', 'signalHandler'), false);
-        // ignore
+        // ignore  终止进程     向一个没有读进程的管道写数据
         pcntl_signal(SIGPIPE, SIG_IGN, false);
     }
 
@@ -2043,7 +2044,7 @@ class Worker
             // Non blocking. 非阻塞
             stream_set_blocking($this->_mainSocket, 0);
         }
-        
+        //这里调用暂不清楚用途
         $this->resumeAccept();
 
     }
