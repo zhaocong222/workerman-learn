@@ -469,7 +469,9 @@ class Worker
         static::installSignal();
         //通过posix_getpid获取当前进程id，然后写入到 pid文件
         static::saveMasterPid();
+        //显示命令ui
         static::displayUI();
+        //创建子进程
         static::forkWorkers();
         static::resetStd();
         static::monitorWorkers();
@@ -1055,8 +1057,11 @@ class Worker
         $handle = fopen(static::$stdoutFile, "a");
         if ($handle) {
             unset($handle);
+            //关闭标准输出和标准错误
             @fclose(STDOUT);
             @fclose(STDERR);
+            //a 写入方式打开，将文件指针指向文件末尾。如果文件不存在则尝试创建之。
+            //把标准输出和错误 定位到 /dev/null
             $STDOUT = fopen(static::$stdoutFile, "a");
             $STDERR = fopen(static::$stdoutFile, "a");
         } else {
@@ -1092,6 +1097,7 @@ class Worker
         }
 
         $loop_name = '';
+        // libevent event swoole
         foreach (static::$_availableEventLoops as $name=>$class) {
             if (extension_loaded($name)) {
                 $loop_name = $name;
@@ -1158,7 +1164,7 @@ class Worker
      */
     protected static function forkWorkersForLinux()
     {
-
+        //static::$_workers 可以理解为实例
         foreach (static::$_workers as $worker) {
             if (static::$_status === static::STATUS_STARTING) {
                 if (empty($worker->name)) {
@@ -1169,7 +1175,7 @@ class Worker
                     static::$_maxWorkerNameLength = $worker_name_length;
                 }
             }
-
+            //static::$_pidMap管理子进程容器
             while (count(static::$_pidMap[$worker->workerId]) < $worker->count) {
                 static::forkOneWorkerForLinux($worker);
             }
@@ -1319,9 +1325,12 @@ class Worker
         if ($id === false) {
             return;
         }
+        //创建进程
         $pid = pcntl_fork();
         // For master process.
         if ($pid > 0) {
+            //主进程
+            //echo $pid."\n".$id;
             static::$_pidMap[$worker->workerId][$pid] = $pid;
             static::$_idMap[$worker->workerId][$id]   = $pid;
         } // For child processes.
@@ -1334,10 +1343,14 @@ class Worker
             }
             static::$_pidMap  = array();
             static::$_workers = array($worker->workerId => $worker);
+            //清除所有定时器
             Timer::delAll();
+            //设置进程名
             static::setProcessTitle('WorkerMan: worker process  ' . $worker->name . ' ' . $worker->getSocketName());
+            //设置用户和组
             $worker->setUserAndGroup();
             $worker->id = $id;
+            //子进程执行
             $worker->run();
             $err = new Exception('event-loop exited');
             static::log($err);
@@ -1367,14 +1380,14 @@ class Worker
      */
     public function setUserAndGroup()
     {
-        // Get uid.
+        // Get uid. 获取系统用户信息
         $user_info = posix_getpwnam($this->user);
         if (!$user_info) {
             static::log("Warning: User {$this->user} not exsits");
             return;
         }
         $uid = $user_info['uid'];
-        // Get gid.
+        // Get gid. 获取组id
         if ($this->group) {
             $group_info = posix_getgrnam($this->group);
             if (!$group_info) {
@@ -2122,7 +2135,6 @@ class Worker
 
         // Set autoload root path.
         Autoloader::setRootPath($this->_autoloadRootPath);
-
         // Create a global event loop.
         if (!static::$globalEvent) {
             $event_loop_class = static::getEventLoopName();

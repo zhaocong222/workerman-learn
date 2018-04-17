@@ -171,8 +171,10 @@ class Timer
     public static function delAll()
     {
         self::$_tasks = array();
+        //如果seconds设置为0,将不会创建alarm信号
         pcntl_alarm(0);
         if (self::$_event) {
+            //清除定时器
             self::$_event->clearAllTimer();
         }
     }
