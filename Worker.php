@@ -459,7 +459,7 @@ class Worker
         static::checkSapiEnv();
         //初始化设置
         static::init();
-        //
+        //解析命令 传参  start | stop 等
         static::parseCommand();
         static::daemonize();
         static::initWorkers();
@@ -684,7 +684,7 @@ class Worker
         }
         global $argv;
         // Check argv;
-        $start_file = $argv[0];
+        $start_file = $argv[0]; //执行脚本
         $available_commands = array(
             'start',
             'stop',
@@ -705,19 +705,24 @@ class Worker
         // Start command.
         $mode = '';
         if ($command === 'start') {
+            //后台运行 可以通过参数-d 或者设置static::$daemonize 为true
             if ($command2 === '-d' || static::$daemonize) {
                 $mode = 'in DAEMON mode';
             } else {
                 $mode = 'in DEBUG mode';
             }
         }
-        static::log("Workerman[$start_file] $command $mode");
 
-        // Get master process PID.
+        //记录启动文件的命令 例如：php demon/http_test.php start
+        //static::log("Workerman[$start_file] $command $mode");
+
+        // Get master process PID. 通过pid文件获取 进程id
         $master_pid      = is_file(static::$pidFile) ? file_get_contents(static::$pidFile) : 0;
+        // posix_getpid():获取当前进程的pid
         $master_is_alive = $master_pid && @posix_kill($master_pid, 0) && posix_getpid() != $master_pid;
         // Master is still alive?
         if ($master_is_alive) {
+            //当前的$start_file是否已经运行
             if ($command === 'start') {
                 static::log("Workerman[$start_file] already running");
                 exit;
@@ -731,6 +736,7 @@ class Worker
         switch ($command) {
             case 'start':
                 if ($command2 === '-d') {
+                    //设置后台运行
                     static::$daemonize = true;
                 }
                 break;
@@ -1901,6 +1907,7 @@ class Worker
     {
         $msg = $msg . "\n";
         if (!static::$daemonize) {
+            //非后台运行模式 echo
             static::safeEcho($msg);
         }
         file_put_contents((string)static::$logFile, date('Y-m-d H:i:s') . ' ' . 'pid:'

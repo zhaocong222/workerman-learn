@@ -19,3 +19,14 @@
 2018-04-17 14:13:03 pid:26267 Workerman[demon/http_test.php] start in DEBUG mode
 2018-04-17 14:15:54 pid:26267 Workerman[http_test.php] stopping ...
 2018-04-17 14:15:54 pid:26267 Workerman[http_test.php] has been stopped
+2018-04-17 14:28:37 pid:26988 Workerman[demon/http_test.php] start in DEBUG mode
+2018-04-17 14:28:40 pid:26989 Workerman[demon/http_test.php] start in DEBUG mode
+2018-04-17 14:28:43 pid:26991 Workerman[demon/http_test.php] start in DEBUG mode
+2018-04-17 14:28:52 pid:26999 Workerman[demon/http_test.php] start in DEBUG mode
+2018-04-17 14:28:53 pid:26999 Workerman[http_test.php] stopping ...
+2018-04-17 14:28:53 pid:26999 Workerman[http_test.php] has been stopped
+2018-04-17 14:29:02 pid:27006 Workerman[demon/http_test.php] start in DEBUG mode
+2018-04-17 14:30:02 pid:27027 Workerman[demon/http_test.php] start in DEBUG mode
+2018-04-17 14:30:31 pid:27027 Workerman[http_test.php] stopping ...
+2018-04-17 14:30:31 pid:27027 Workerman[http_test.php] has been stopped
+2018-04-17 14:32:06 pid:27092 Workerman[demon/http_test.php] start in DEBUG mode
