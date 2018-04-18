@@ -8,8 +8,8 @@ $http_worker = new Worker("http://0.0.0.0:2345");
 
 Worker::$logFile = './workerman.log';
 
-// 启动2个进程对外提供服务
-$http_worker->count = 4;
+// 启动3个进程对外提供服务
+$http_worker->count = 3;
 
 //设置Worker子进程启动时的回调函数，每个子进程启动时都会执行
 $http_worker->onWorkerStart = function($worker){

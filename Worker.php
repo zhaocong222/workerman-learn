@@ -463,7 +463,7 @@ class Worker
         static::parseCommand();
         //把当前进程设置为守护进程
         static::daemonize();
-        //初始化worker进程
+        //主要创建socket连接
         static::initWorkers();
         //安装信号
         static::installSignal();
@@ -1179,6 +1179,8 @@ class Worker
             while (count(static::$_pidMap[$worker->workerId]) < $worker->count) {
                 static::forkOneWorkerForLinux($worker);
             }
+
+            //print_r(static::$_pidMap[$worker->workerId]);
         }
     }
 
@@ -1335,6 +1337,7 @@ class Worker
             static::$_idMap[$worker->workerId][$id]   = $pid;
         } // For child processes.
         elseif (0 === $pid) {
+            //reusePort默认关闭
             if ($worker->reusePort) {
                 $worker->listen();
             }
@@ -1350,7 +1353,7 @@ class Worker
             //设置用户和组
             $worker->setUserAndGroup();
             $worker->id = $id;
-            //子进程执行
+            //每个子进程创建 libevent loop事件循环(目前这么理解)
             $worker->run();
             $err = new Exception('event-loop exited');
             static::log($err);
@@ -2097,10 +2100,12 @@ class Worker
     {
         // Register a listener to be notified when server socket is ready to read.
         //当socket服务准备开始读取 注册一个监听者去通知
+        //static::$globalEvent -> \Workerman\Events\Event
         if (static::$globalEvent && true === $this->_pauseAccept && $this->_mainSocket) {
 
             //$this->_mainSocket -> socket连接
             if ($this->transport !== 'udp') {
+                //acceptConnection->接收创建的socket
                 static::$globalEvent->add($this->_mainSocket, EventInterface::EV_READ, array($this, 'acceptConnection'));
             } else {
                 static::$globalEvent->add($this->_mainSocket, EventInterface::EV_READ,
@@ -2137,7 +2142,9 @@ class Worker
         Autoloader::setRootPath($this->_autoloadRootPath);
         // Create a global event loop.
         if (!static::$globalEvent) {
+            //安装了libevent,event扩展后 $event_loop_class -> \Workerman\Events\Event
             $event_loop_class = static::getEventLoopName();
+            //初始化 $this->_eventBase = new \EventBase();
             static::$globalEvent = new $event_loop_class;
             $this->resumeAccept();
         }
