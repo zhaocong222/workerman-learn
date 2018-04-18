@@ -89,11 +89,13 @@ class Event implements EventInterface
                 
             default :
                 $fd_key = (int)$fd;
+                //如果一个事件被设置了EV_PERSIST，那么这个事件就是持续化的，意思就是这个事件会保持挂起状态，即使回调函数被执行。
                 $real_flag = $flag === self::EV_READ ? \Event::READ | \Event::PERSIST : \Event::WRITE | \Event::PERSIST;
                 $event = new \Event($this->_eventBase, $fd, $real_flag, $func, $fd);
                 if (!$event||!$event->add()) {
                     return false;
                 }
+                //注册到事件容器_allEvents方便管理
                 $this->_allEvents[$fd_key][$flag] = $event;
                 return true;
         }

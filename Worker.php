@@ -474,6 +474,7 @@ class Worker
         //创建子进程
         static::forkWorkers();
         static::resetStd();
+        //监控进程
         static::monitorWorkers();
     }
 
@@ -1353,7 +1354,7 @@ class Worker
             //设置用户和组
             $worker->setUserAndGroup();
             $worker->id = $id;
-            //每个子进程创建 libevent loop事件循环(目前这么理解)
+            //每个子进程创建 libevent loop事件循环(目前这么理解) ,将socket资源注册
             $worker->run();
             $err = new Exception('event-loop exited');
             static::log($err);
@@ -1448,12 +1449,15 @@ class Worker
      */
     protected static function monitorWorkersForLinux()
     {
+        //改变当前状态
         static::$_status = static::STATUS_RUNNING;
         while (1) {
-            // Calls signal handlers for pending signals.
+            // Calls signal handlers for pending signals. 调用等待信号的处理器
             pcntl_signal_dispatch();
             // Suspends execution of the current process until a child has exited, or until a signal is delivered
             $status = 0;
+            //pcntl_wait 等待或返回fork的子进程状态
+            //WUNTRACED	 子进程已经退出并且其状态未报告时返回
             $pid    = pcntl_wait($status, WUNTRACED);
             // Calls signal handlers for pending signals again.
             pcntl_signal_dispatch();
@@ -1501,6 +1505,7 @@ class Worker
             } else {
                 // If shutdown state and all child processes exited then master process exit.
                 if (static::$_status === static::STATUS_SHUTDOWN && !static::getAllWorkerPids()) {
+                    //stop进程
                     static::exitAndClearAll();
                 }
             }
@@ -2146,10 +2151,11 @@ class Worker
             $event_loop_class = static::getEventLoopName();
             //初始化 $this->_eventBase = new \EventBase();
             static::$globalEvent = new $event_loop_class;
+            //把socket添加到事件循环里
             $this->resumeAccept();
         }
 
-        // Reinstall signal.
+        // Reinstall signal. 重新安装信号 然后 将信号注册到事件循环中event loop
         static::reinstallSignal();
 
         // Init Timer.
@@ -2161,6 +2167,7 @@ class Worker
         }
 
         // Try to emit onWorkerStart callback.
+        //触发执行入口文件中定义的onWorkerStart回调函数
         if ($this->onWorkerStart) {
             try {
                 call_user_func($this->onWorkerStart, $this);
@@ -2177,7 +2184,7 @@ class Worker
             }
         }
 
-        // Main loop.
+        // Main loop. -> $this->_eventBase->loop();  处理事件，根据指定的base来处理事件循环中的事件
         static::$globalEvent->loop();
     }
 
