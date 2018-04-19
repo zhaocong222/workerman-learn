@@ -1466,8 +1466,21 @@ class Worker
             // If a child has already exited.
             if ($pid > 0) {
                 // Find out witch worker process exited.
+                /*
+                 key为 worker实例的hash， value 为子进程id
+                 static::$_pidMap = Array
+                (
+                    [000000002d07f817000000000e24d6e3] => Array
+                        (
+                            [9013] => 9013
+                            [9014] => 9014
+                            [9015] => 9015
+                        )
+
+                )
+                */
                 foreach (static::$_pidMap as $worker_id => $worker_pid_array) {
-                    if (isset($worker_pid_array[$pid])) {
+                    if (isset($worker_pid_array[$pid])) { //子进程
                         $worker = static::$_workers[$worker_id];
                         // Exit status.
                         if ($status !== 0) {
@@ -1480,11 +1493,12 @@ class Worker
                         }
                         static::$_globalStatistics['worker_exit_info'][$worker_id][$status]++;
 
-                        // Clear process data.
+                        // Clear process data. 清楚子进程信息
                         unset(static::$_pidMap[$worker_id][$pid]);
 
-                        // Mark id is available.
+                        // Mark id is available. 获取$worker_id实例下子进程的id
                         $id                            = static::getId($worker_id, $pid);
+                        //设置上述id为可用
                         static::$_idMap[$worker_id][$id] = 0;
 
                         break;
