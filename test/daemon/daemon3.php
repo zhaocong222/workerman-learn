@@ -24,15 +24,19 @@ function daemon(){
 
 }
 
+function moniterWorker(){
+    while (1){
+        //父进程阻塞着等待子进程的退出,防止僵死进程
+        //WUNTRACED	 如果子进程进入暂停执行情况则马上返回，但结束状态不予以理会
+        $pid    = pcntl_wait($status, WUNTRACED);
+        if ($pid > 0){
+            echo '子进程是',$pid,',状态是exit';
+        }
+    }
+}
+
 //后台运行
 daemon();
-
-/*
-while (1){
-    sleep(1);
-}
-*/
-
 
 $num = 3;
 $_pid = posix_getpid();
@@ -61,3 +65,5 @@ while (count($pidMap[$_pid]) < $num){
     }
 }
 
+//监控进程
+moniterWorker();
