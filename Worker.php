@@ -475,7 +475,7 @@ class Worker
         static::forkWorkers();
         static::resetStd();
         //监控进程
-        static::monitorWorkers();
+        //static::monitorWorkers();
     }
 
     /**
@@ -1062,7 +1062,7 @@ class Worker
             @fclose(STDOUT);
             @fclose(STDERR);
             //a 写入方式打开，将文件指针指向文件末尾。如果文件不存在则尝试创建之。
-            //把标准输出和错误 定位到 /dev/null
+            //把标准输出和错误 定位到 /dev/null , http://www.cnblogs.com/loveyouyou616/p/8880769.html
             $STDOUT = fopen(static::$stdoutFile, "a");
             $STDERR = fopen(static::$stdoutFile, "a");
         } else {
