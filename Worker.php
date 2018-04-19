@@ -473,9 +473,10 @@ class Worker
         static::displayUI();
         //创建子进程
         static::forkWorkers();
+        //标准错误流 (stdout) 、标准错误流（stderr）重定向到设备/dev/null上,丢弃这个输出流上的所有输出。
         static::resetStd();
         //监控进程
-        //static::monitorWorkers();
+        static::monitorWorkers();
     }
 
     /**
@@ -1456,9 +1457,10 @@ class Worker
             pcntl_signal_dispatch();
             // Suspends execution of the current process until a child has exited, or until a signal is delivered
             $status = 0;
-            //pcntl_wait 等待或返回fork的子进程状态
-            //WUNTRACED	 子进程已经退出并且其状态未报告时返回
+            //pcntl_wait 父进程阻塞着等待子进程的退出,防止僵死进程 ,pcntl_wait()返回退出的子进程进程号
+            //WUNTRACED	 如果子进程进入暂停执行情况则马上返回，但结束状态不予以理会
             $pid    = pcntl_wait($status, WUNTRACED);
+
             // Calls signal handlers for pending signals again.
             pcntl_signal_dispatch();
             // If a child has already exited.
@@ -1505,7 +1507,7 @@ class Worker
             } else {
                 // If shutdown state and all child processes exited then master process exit.
                 if (static::$_status === static::STATUS_SHUTDOWN && !static::getAllWorkerPids()) {
-                    //stop进程
+                    //执行$onMasterStop回调函数，然后exit退出进程
                     static::exitAndClearAll();
                 }
             }
@@ -1543,6 +1545,7 @@ class Worker
         if (static::$onMasterStop) {
             call_user_func(static::$onMasterStop);
         }
+        //结束退出
         exit(0);
     }
 
