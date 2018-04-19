@@ -13,13 +13,12 @@ $http_worker->count = 3;
 
 //设置Worker子进程启动时的回调函数，每个子进程启动时都会执行
 $http_worker->onWorkerStart = function($worker){
-    echo "worker starting...\n";
+    //echo "worker starting...\n";
 };
 
 $http_worker->onConnect = function($connection)
 {
-    echo "new connection from ip".$connection->getRemoteIp()."\n";
-    echo $connection->id."\n";
+    //echo "new connection from ip".$connection->getRemoteIp()."\n";
 };
 
 // 接收到浏览器发送的数据时回复hello world给浏览器

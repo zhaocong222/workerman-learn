@@ -293,11 +293,14 @@ class TcpConnection extends ConnectionInterface
             self::$_idRecorder = 0;
         }
         $this->_socket = $socket;
+        //非阻塞
         stream_set_blocking($this->_socket, 0);
         // Compatible with hhvm
         if (function_exists('stream_set_read_buffer')) {
+            //0 -> 读取操作是无缓冲的
             stream_set_read_buffer($this->_socket, 0);
         }
+        //echo get_class(Worker::$globalEvent); -> Workerman\Events\Event
         Worker::$globalEvent->add($this->_socket, EventInterface::EV_READ, array($this, 'baseRead'));
         $this->maxSendBufferSize = self::$defaultMaxSendBufferSize;
         $this->_remoteAddress    = $remote_address;
@@ -574,7 +577,7 @@ class TcpConnection extends ConnectionInterface
                 return;
             }
         }
-
+        //socket读数据
         $buffer = @fread($socket, self::READ_BUFFER_SIZE);
 
         // Check connection closed.
@@ -584,7 +587,9 @@ class TcpConnection extends ConnectionInterface
                 return;
             }
         } else {
+            //读取字符长度
             $this->bytesRead += strlen($buffer);
+            //拼接读取的数据
             $this->_recvBuffer .= $buffer;
         }
 
@@ -635,6 +640,8 @@ class TcpConnection extends ConnectionInterface
                     continue;
                 }
                 try {
+                    //$one_request_buffer 对应内容
+                    //$parser 对应的解析协议类 例如http -> \Workerman\Protocols\Http
                     // Decode request buffer before Emitting onMessage callback.
                     call_user_func($this->onMessage, $this, $parser::decode($one_request_buffer, $this));
                 } catch (\Exception $e) {

@@ -2245,6 +2245,7 @@ class Worker
     public function acceptConnection($socket)
     {
         // Accept a connection on server socket.
+        //返回接受套接之后的资源流 或者在失败时返回 FALSE
         $new_socket = @stream_socket_accept($socket, 0, $remote_address);
         // Thundering herd.
         if (!$new_socket) {

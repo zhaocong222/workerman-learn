@@ -111,8 +111,9 @@ class Http
             'REQUEST_TIME'         => time()
         );
 
-        // Parse headers.
+        // Parse headers. 解析http协议 2个换行分别为$http_header $http_body
         list($http_header, $http_body) = explode("\r\n\r\n", $recv_buffer, 2);
+        //分割头内容
         $header_data = explode("\r\n", $http_header);
 
         list($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $_SERVER['SERVER_PROTOCOL']) = explode(' ',
@@ -120,11 +121,13 @@ class Http
 
         $http_post_boundary = '';
         unset($header_data[0]);
+        //解析头信息
         foreach ($header_data as $content) {
             // \r\n\r\n
             if (empty($content)) {
                 continue;
             }
+            //$content -> Accept-Language:zh-cn
             list($key, $value)       = explode(':', $content, 2);
             $key                     = str_replace('-', '_', strtoupper($key));
             $value                   = trim($value);
