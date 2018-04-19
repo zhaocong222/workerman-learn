@@ -24,7 +24,10 @@ $http_worker->onConnect = function($connection)
 // 接收到浏览器发送的数据时回复hello world给浏览器
 $http_worker->onMessage = function($connection, $data)
 {
+    //print_r($data);
+    //$data -> $parser::decode($one_request_buffer, $this)返回的 array('get' => $_GET, 'post' => $_POST, 'cookie' => $_COOKIE, 'server' => $_SERVER, 'files' => $_FILES);
     // 向浏览器发送hello world
+    //$connection -> \Workerman\Connection\{协议}Connection
     $connection->send('hello world');
 };
 

@@ -338,7 +338,22 @@ class TcpConnection extends ConnectionInterface
         // Try to call protocol::encode($send_buffer) before sending.
         if (false === $raw && $this->protocol !== null) {
             $parser      = $this->protocol;
+            //发送的$send_buffer封装成 解析的协议
+            /*
+             *  比如http协议 $send_buffer->hello world
+             *  封装成
+             *  HTTP/1.1 200 OK
+                Content-Type: text/html;charset=utf-8
+                Connection: keep-alive
+                Server: workerman/3.5.5
+                Content-Length: 11
+
+                hello world
+             *
+             *
+             */
             $send_buffer = $parser::encode($send_buffer, $this);
+            //file_put_contents('1.log',$send_buffer);
             if ($send_buffer === '') {
                 return null;
             }
@@ -358,15 +373,16 @@ class TcpConnection extends ConnectionInterface
             return null;
         }
 
-
         // Attempt to send data directly.
         if ($this->_sendBuffer === '') {
+            //echo $send_buffer."\n";
             $len = @fwrite($this->_socket, $send_buffer, 8192);
             // send successful.
             if ($len === strlen($send_buffer)) {
                 $this->bytesWritten += $len;
                 return true;
             }
+
             // Send only part of the data.
             if ($len > 0) {
                 $this->_sendBuffer = substr($send_buffer, $len);
