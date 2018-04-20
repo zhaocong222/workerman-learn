@@ -595,6 +595,7 @@ class TcpConnection extends ConnectionInterface
         }
         //socket读数据
         $buffer = @fread($socket, self::READ_BUFFER_SIZE);
+        //echo $buffer."\n";
 
         // Check connection closed.
         if ($buffer === '' || $buffer === false) {

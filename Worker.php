@@ -1126,6 +1126,8 @@ class Worker
         } else {
             static::$eventLoopClass = interface_exists('\React\EventLoop\LoopInterface')? '\Workerman\Events\React\StreamSelectLoop':'\Workerman\Events\Select';
         }
+
+        //echo static::$eventLoopClass -> \Workerman\Events\Event
         return static::$eventLoopClass;
     }
 
@@ -2122,7 +2124,7 @@ class Worker
     {
         // Register a listener to be notified when server socket is ready to read.
         //当socket服务准备开始读取 注册一个监听者去通知
-        //static::$globalEvent -> \Workerman\Events\Event
+        //static::$globalEvent -> \Workerman\Events\Event实例
         if (static::$globalEvent && true === $this->_pauseAccept && $this->_mainSocket) {
 
             //$this->_mainSocket -> socket连接
@@ -2166,7 +2168,7 @@ class Worker
         if (!static::$globalEvent) {
             //安装了libevent,event扩展后 $event_loop_class -> \Workerman\Events\Event
             $event_loop_class = static::getEventLoopName();
-            //初始化 $this->_eventBase = new \EventBase();
+            //初始化 new \Workerman\Events\Event() -> $this->_eventBase = new \EventBase();
             static::$globalEvent = new $event_loop_class;
             //把socket添加到事件循环里
             $this->resumeAccept();
