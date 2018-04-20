@@ -16,9 +16,11 @@ $event = new Event($event_base, $fd, Event::READ | Event::PERSIST, function ($fd
     
     //接收创建的socket
     $conn = stream_socket_accept($fd);
+    echo @fread($conn,100)."\n";
 
-    fwrite($conn, "this is server\n");
-    fclose($conn);
+
+    //fwrite($conn, "this is server\n");
+    //fclose($conn);
 }, $fd);
 
 //上述绑定事件挂起
