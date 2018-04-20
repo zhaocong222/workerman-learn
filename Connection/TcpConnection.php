@@ -611,7 +611,13 @@ class TcpConnection extends ConnectionInterface
 
         // If the application layer protocol has been set up.
         if ($this->protocol !== null) {
+            //对应协议解析的类 \Workerman\Protocols\Http
             $parser = $this->protocol;
+            /*
+            echo $this->_recvBuffer."\n";
+            echo $this->_currentPackageLength."\n";
+            exit();
+            */
             while ($this->_recvBuffer !== '' && !$this->_isPaused) {
                 // The current packet length is known.
                 if ($this->_currentPackageLength) {
@@ -620,6 +626,7 @@ class TcpConnection extends ConnectionInterface
                         break;
                     }
                 } else {
+                    //echo $this->_recvBuffer."\n";
                     // Get current package length.
                     $this->_currentPackageLength = $parser::input($this->_recvBuffer, $this);
                     // The packet length is unknown.
@@ -637,7 +644,6 @@ class TcpConnection extends ConnectionInterface
                         return;
                     }
                 }
-
                 // The data is enough for a packet.
                 self::$statistics['total_request']++;
                 // The current packet length is equal to the length of the buffer.
