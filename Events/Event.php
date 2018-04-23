@@ -95,7 +95,7 @@ class Event implements EventInterface
                 if (!$event||!$event->add()) {
                     return false;
                 }
-                //注册到事件容器_allEvents方便管理
+                //event对象必须放在一个全局数组里面，否则会自动销毁。
                 $this->_allEvents[$fd_key][$flag] = $event;
                 return true;
         }
