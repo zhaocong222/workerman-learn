@@ -5,6 +5,6 @@ if (!$fd){
     echo "$errstr ($errno)<br/>\n";
 } else {
     fwrite($fd,"hello world");
-    echo fread($fd,20);
+    //echo fread($fd,20);
     fclose($fd);
 }
