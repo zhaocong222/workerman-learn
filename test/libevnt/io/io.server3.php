@@ -34,6 +34,8 @@ function acceptConnection($socket){
     add($new_socket,'baseRead');
 }
 
+file_put_contents('1.log','');
+
 $socketmain = stream_socket_server('tcp://127.0.0.1:4455', $errno, $errmsg, STREAM_SERVER_BIND | STREAM_SERVER_LISTEN);
 //非阻塞
 stream_set_blocking($socketmain,0);
